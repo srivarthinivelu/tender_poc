@@ -1,0 +1,82 @@
+{
+  "opportunities": [
+    {
+      "id": "OPP-0001",
+      "name": "Tender Management 2026",
+      "account_name": "Centro Hospitalario Regional Santa Monica SAS",
+      "private": false,
+      "expected_revenue": 339375.0,
+      "close_date": "2026-01-15",
+      "next_step": "Collect final approvals",
+      "stage": "Submitted",
+      "probability": 10,
+      "type": "New Business",
+      "lead_source": "RFP Portal",
+      "primary_campaign_source": "Tender 2026",
+      "main_competitors": "PharmaX, MedCo",
+      "order_number": "ORD-7881",
+      "current_generators": "ERP Bot",
+      "tracking_number": "TRK-2219",
+      "delivery_installation_status": "Pending",
+      "created_by": "Tender Desk",
+      "last_modified_by": "Tender Desk",
+      "products": [
+        {
+          "name": "Ibuprofen",
+          "quantity": 75000,
+          "price": 58.25,
+          "date": "2026-01-10"
+        },
+        {
+          "name": "Linezolid",
+          "quantity": 50000,
+          "price": 45.0,
+          "date": "2026-01-10"
+        },
+        {
+          "name": "Sildenafil",
+          "quantity": 35000,
+          "price": 15.0,
+          "date": "2026-01-10"
+        },
+        {
+          "name": "HIV kit",
+          "quantity": 600,
+          "price": 2.6,
+          "date": "2026-01-12"
+        }
+      ],
+      "attachments": []
+    },
+    {
+      "id": "OPP-0002",
+      "name": "Govt tender",
+      "account_name": "Tamilnadu govt",
+      "private": false,
+      "expected_revenue": 338888.0,
+      "close_date": "2026-01-12",
+      "next_step": "",
+      "stage": "Submitted",
+      "probability": 10,
+      "type": "",
+      "lead_source": "",
+      "primary_campaign_source": "",
+      "main_competitors": "",
+      "order_number": "3",
+      "current_generators": "",
+      "tracking_number": "",
+      "delivery_installation_status": "",
+      "created_by": "Tender Desk",
+      "last_modified_by": "Tender Desk",
+      "products": [
+        {
+          "name": "Cotton Pad",
+          "quantity": 56,
+          "price": 5678.0,
+          "date": "2026-01-13"
+        }
+      ],
+      "attachments": []
+    }
+  ]
+}
