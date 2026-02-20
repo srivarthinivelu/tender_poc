@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>DB Monitoring Dashboard — Light Theme</title>
+<style>
+  :root{
+    --bg:#ffffff; --panel:#ffffff; --muted:#5b6470; --text:#0f1720; --accent:#2b6cff;
+    --border:#e6e8ee; --chip:#f4f6fb; --ok:#159e53; --warn:#d78600; --err:#d92d2d;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,Segoe UI,Roboto,system-ui,-apple-system,sans-serif}
+  header{display:flex;align-items:center;justify-content:space-between;padding:14px 20px;border-bottom:1px solid var(--border);background:#fafbff;position:sticky;top:0;z-index:20}
+  header h1{font-size:16px;margin:0;font-weight:600}
+  .user{font-size:12px;color:var(--muted)}
+  .container{max-width:1280px;margin:0 auto;padding:16px}
+  .tabs{display:flex;gap:6px;border-bottom:1px solid var(--border)}
+  .tab{padding:10px 14px;font-size:13px;color:var(--muted);border:1px solid transparent;border-top-left-radius:10px;border-top-right-radius:10px;cursor:pointer}
+  .tab.active{color:var(--text);background:#f5f7fd;border:1px solid var(--border);border-bottom-color:transparent}
+  .panel{background:var(--panel);border:1px solid var(--border);border-radius:12px;overflow:hidden;margin-top:12px;box-shadow:0 2px 12px rgba(10,20,40,0.04)}
+  .panel h3{margin:0;padding:12px 14px;border-bottom:1px solid var(--border);font-size:13px;background:#fbfcff}
+  table{width:100%;border-collapse:collapse;font-size:12px}
+  th,td{padding:10px 12px;border-bottom:1px solid var(--border)}
+  th{color:#576071;text-align:left;background:#f6f8fc}
+  tr:hover td{background:#f9fbff}
+  .btn{background:#f3f6ff;border:1px solid var(--border);color:#1f2937;padding:6px 10px;border-radius:8px;font-size:12px;cursor:pointer}
+  .btn.primary{background:var(--accent);border-color:#1f58ff;color:white}
+  .status-chip{display:inline-flex;gap:6px;align-items:center;padding:2px 8px;border-radius:999px;border:1px solid}
+  .chip-err{background:#fff4f4;border-color:#ffd4d4;color:#9a1b1b}
+  .chip-warn{background:#fff6e8;border-color:#ffe3b6;color:#8a5a00}
+  .chip-ok{background:#ecfff5;border-color:#baf1d2;color:#0b6a36}
+  .toolbar{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+  .filter-chip{background:#f4f6fb;color:#5b6470;padding:8px 10px;border-radius:999px;border:1px solid var(--border);font-size:12px}
+  .drawer-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.35);display:none;z-index:40}
+  .drawer{position:fixed;top:0;right:-520px;height:100vh;width:min(520px,96vw);background:#ffffff;border-left:1px solid var(--border);box-shadow:-8px 0 24px rgba(0,0,0,.08);transition:right .25s ease;z-index:50;display:flex;flex-direction:column}
+  .drawer.open{right:0}
+  .drawer header{display:flex;align-items:center;justify-content:space-between;padding:12px 14px;background:#fbfcff;border-bottom:1px solid var(--border)}
+  .drawer .body{padding:12px;overflow:auto;flex:1}
+  .drawer .footer{padding:12px;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:8px;background:#fbfcff}
+  .subtabs{display:flex;gap:6px;border-bottom:1px solid var(--border);margin-bottom:10px}
+  .subtab{padding:8px 10px;font-size:12px;color:#5b6470;border:1px solid transparent;border-top-left-radius:8px;border-top-right-radius:8px;cursor:pointer}
+  .subtab.active{color:#0f1720;background:#f5f7fd;border:1px solid var(--border);border-bottom-color:transparent}
+  .field{display:grid;gap:6px;margin-bottom:10px}
+  .field label{font-size:12px;color:#5b6470}
+  .field input,.field textarea,.field select{background:white;color:#0f1720;border:1px solid var(--border);border-radius:8px;padding:10px;font-size:13px}
+  .hint{font-size:11px;color:#6b7280}
+</style>
+</head>
+<body>
+<header>
+  <h1>DB Monitoring Dashboard</h1>
+  <div class="user">Signed in: <strong>Sri V</strong></div>
+</header>
+
+<div class="container">
+  <div class="tabs">
+    <div class="tab" onclick="switchTab('overview')">Overview</div>
+    <div class="tab" onclick="switchTab('queries')">Queries</div>
+    <div class="tab" onclick="switchTab('jobs')">Jobs</div>
+    <div class="tab" onclick="switchTab('tables')">Tables</div>
+    <div class="tab active" onclick="switchTab('alerts')" id="alertsTab">🔔 Alerts</div>
+  </div>
+
+  <section class="panel" id="alertsPanel">
+    <h3>Alerts</h3>
+    <div class="toolbar">
+      <div class="filter-chip">Time: Last 24h ▾</div>
+      <div class="filter-chip">Env: Prod ▾</div>
+      <div class="filter-chip">Severity: All ▾</div>
+      <div class="filter-chip">Type: All ▾</div>
+    </div>
+    <table aria-label="Alerts table">
+      <thead>
+        <tr>
+          <th>#</th><th>ID</th><th>Type</th><th>Severity</th><th>Source</th><th>Created</th><th>Status</th><th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr onclick="openAlert('A-1001')" style="cursor:pointer">
+          <td>1</td><td>A-1001</td><td>Query Timeout</td>
+          <td><span class="status-chip chip-err">HIGH</span></td>
+          <td>CoreDB</td><td>12:02</td><td>Open</td>
+          <td><button class="btn" onclick="event.stopPropagation(); openAlert('A-1001')">Open</button>
+              <button class="btn" onclick="event.stopPropagation(); acknowledgeFromTable('A-1001')">Acknowledge</button></td>
+        </tr>
+        <tr onclick="openAlert('A-1002')" style="cursor:pointer">
+          <td>2</td><td>A-1002</td><td>Job Failed</td>
+          <td><span class="status-chip chip-err">HIGH</span></td>
+          <td>ADF:ETL-Load-102</td><td>11:58</td><td>Open</td>
+          <td><button class="btn" onclick="event.stopPropagation(); openAlert('A-1002')">Open</button>
+              <button class="btn" onclick="event.stopPropagation(); acknowledgeFromTable('A-1002')">Acknowledge</button></td>
+        </tr>
+        <tr onclick="openAlert('A-1003')" style="cursor:pointer">
+          <td>3</td><td>A-1003</td><td>Schema Drift</td>
+          <td><span class="status-chip chip-warn">MEDIUM</span></td>
+          <td>dim_customer</td><td>11:45</td><td>Acknowledged</td>
+          <td><button class="btn" onclick="event.stopPropagation(); openAlert('A-1003')">Open</button></td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section class="panel" id="overviewPanel" style="display:none;"><h3>Overview</h3><div style="padding:12px;">KPI cards…</div></section>
+  <section class="panel" id="queriesPanel" style="display:none;"><h3>Queries</h3><div style="padding:12px;">Running queries table…</div></section>
+  <section class="panel" id="jobsPanel" style="display:none;"><h3>Jobs</h3><div style="padding:12px;">ETL/ELT jobs status…</div></section>
+  <section class="panel" id="tablesPanel" style="display:none;"><h3>Tables</h3><div style="padding:12px;">Table health and freshness…</div></section>
+</div>
+
+<div class="drawer-backdrop" id="drawerBackdrop" onclick="closeDrawer()"></div>
+<aside class="drawer" id="drawer" role="dialog" aria-modal="true" aria-labelledby="drawerTitle">
+  <header>
+    <div>
+      <div id="drawerTitle" style="font-size:14px;font-weight:600;">Alert: —</div>
+      <div class="hint" id="drawerMeta">Status: — • Severity: — • Sticky until comment</div>
+    </div>
+    <button class="btn" onclick="closeDrawer()">Close</button>
+  </header>
+  <div class="body">
+    <div class="subtabs">
+      <div class="subtab active" id="subtab-details" onclick="switchSubtab('details')">Details</div>
+      <div class="subtab" id="subtab-timeline" onclick="switchSubtab('timeline')">Timeline</div>
+      <div class="subtab" id="subtab-comments" onclick="switchSubtab('comments')">Comments</div>
+    </div>
+
+    <div id="subcontent-details">
+      <div class="field"><label>Message</label><div id="detailMessage">—</div></div>
+      <div class="field" style="grid-template-columns:1fr 1fr;gap:10px">
+        <div><label>Type</label><div id="detailType">—</div></div>
+        <div><label>Severity</label><div id="detailSeverity">—</div></div>
+      </div>
+      <div class="field" style="grid-template-columns:1fr 1fr;gap:10px">
+        <div><label>Source</label><div id="detailSource">—</div></div>
+        <div><label>Created</label><div id="detailCreated">—</div></div>
+      </div>
+      <div class="field"><label>Recommendations</label><div id="detailRecs">—</div></div>
+    </div>
+
+    <div id="subcontent-timeline" style="display:none">
+      <div class="field"><label>Event Timeline</label>
+        <ul id="timelineList" style="margin:6px 0 0 16px; padding:0; line-height:1.7;"></ul>
+      </div>
+    </div>
+
+    <div id="subcontent-comments" style="display:none">
+      <div class="hint">A comment is required to acknowledge and clear this alert.</div>
+      <div class="field">
+        <label for="commentText">Comment</label>
+        <textarea id="commentText" rows="3" placeholder="Root cause, investigation notes, mitigation…"></textarea>
+      </div>
+      <div class="field">
+        <label for="ownerInput">Owner</label>
+        <input id="ownerInput" value="Srivarthini Shanmugam"/>
+      </div>
+      <div class="field" style="grid-template-columns:1fr 1fr;gap:10px">
+        <div>
+          <label for="severitySelect">Severity</label>
+          <select id="severitySelect"><option>High</option><option>Medium</option><option>Low</option></select>
+        </div>
+        <div>
+          <label for="snoozeSelect">Snooze</label>
+          <select id="snoozeSelect"><option>None</option><option>10m</option><option>30m</option><option>1h</option></select>
+        </div>
+      </div>
+      <div class="field">
+        <label for="actionInput">Next Action</label>
+        <input id="actionInput" placeholder="Kill & re-run; add index hint; notify DBA"/>
+      </div>
+    </div>
+  </div>
+  <div class="footer">
+    <button class="btn" onclick="closeDrawer()">Cancel</button>
+    <button class="btn primary" onclick="acknowledgeInDrawer()">Acknowledge & Save</button>
+  </div>
+</aside>
+
+<script>
+  const alerts = {
+    "A-1001": {id:"A-1001", type:"Query Timeout", severity:"High", source:"CoreDB", created:"12:02", status:"Open", message:"Query Q‑8123 running 27m (expected ≤ 5m).", recs:"Check CPU and missing index on order_date; consider killing and re-running with index hint.", timeline:["13:00 → Escalated to HIGH","12:50 → Crossed 15m threshold","12:35 → Query started"]},
+    "A-1002": {id:"A-1002", type:"Job Failed", severity:"High", source:"ADF:ETL-Load-102", created:"11:58", status:"Open", message:"ADF pipeline ETL‑Load‑102 failed at task transform_orders.", recs:"Review logs; retry with smaller batch; check schema drift on facts_orders.", timeline:["11:58 → Marked FAILED","11:45 → Task started"]},
+    "A-1003": {id:"A-1003", type:"Schema Drift", severity:"Medium", source:"dim_customer", created:"11:45", status:"Acknowledged", message:"New nullable column 'segment_v2' detected; lineage impact pending.", recs:"Run contract tests; update downstream models.", timeline:["11:45 → Drift detected","11:50 → Notified owner"]}
+  };
+
+  function switchTab(tab){
+    const panels = ["overview","queries","jobs","tables","alerts"];
+    panels.forEach(p=>{ document.getElementById(p+"Panel").style.display = (p===tab) ? "block":"none"; });
+    document.querySelectorAll(".tabs .tab").forEach(t=>t.classList.remove("active"));
+    if(tab==="alerts"){ document.getElementById("alertsTab").classList.add("active"); }
+  }
+  switchTab('alerts');
+
+  const drawer = document.getElementById('drawer');
+  const backdrop = document.getElementById('drawerBackdrop');
+  let activeAlertId = null;
+
+  function openAlert(id){
+    activeAlertId = id; const a = alerts[id]; if(!a) return;
+    document.getElementById('drawerTitle').textContent = `Alert: ${a.id} (${a.type})`;
+    document.getElementById('drawerMeta').textContent = `Status: ${a.status} • Severity: ${a.severity.toUpperCase()} • Sticky until comment`;
+    document.getElementById('detailMessage').textContent = a.message;
+    document.getElementById('detailType').textContent = a.type;
+    document.getElementById('detailSeverity').textContent = a.severity;
+    document.getElementById('detailSource').textContent = a.source;
+    document.getElementById('detailCreated').textContent = a.created;
+    document.getElementById('detailRecs').textContent = a.recs;
+    const tlist = document.getElementById('timelineList'); tlist.innerHTML = ""; a.timeline.forEach(item=>{ const li=document.createElement('li'); li.textContent=item; tlist.appendChild(li); });
+    document.getElementById('commentText').value = ""; document.getElementById('ownerInput').value = "Srivarthini Shanmugam"; document.getElementById('severitySelect').value = a.severity.charAt(0).toUpperCase()+a.severity.slice(1).toLowerCase(); document.getElementById('snoozeSelect').value = "None"; document.getElementById('actionInput').value = "";
+    openDrawer(); switchSubtab('details');
+  }
+  function openDrawer(){ drawer.classList.add('open'); backdrop.style.display = 'block'; }
+  function closeDrawer(){ drawer.classList.remove('open'); backdrop.style.display = 'none'; }
+  function switchSubtab(which){ ["details","timeline","comments"].forEach(id=>{ document.getElementById('subtab-'+id).classList.toggle('active', id===which); document.getElementById('subcontent-'+id).style.display = (id===which) ? 'block' : 'none'; }); }
+
+  function acknowledgeInDrawer(){
+    const comment = document.getElementById('commentText').value.trim();
+    if(!comment){ switchSubtab('comments'); alert("Comment is required to acknowledge this alert."); return; }
+    const payload = { alertId: activeAlertId, comment, owner: document.getElementById('ownerInput').value, severity: document.getElementById('severitySelect').value, snooze: document.getElementById('snoozeSelect').value, action: document.getElementById('actionInput').value, ts: new Date().toISOString() };
+    console.log("ACK payload", payload); alert(`Alert ${activeAlertId} acknowledged.`); closeDrawer();
+  }
+  function acknowledgeFromTable(id){ openAlert(id); switchSubtab('comments'); }
+</script>
+</body>
+</html>
